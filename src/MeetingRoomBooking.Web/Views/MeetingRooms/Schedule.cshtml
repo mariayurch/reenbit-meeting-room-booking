@@ -1,0 +1,27 @@
+@model MeetingRoomBooking.Application.MeetingRooms.Models.MeetingRoomDetails
+
+@{
+    ViewData["Title"] = $"{Model.Name} schedule";
+}
+
+<div class="mb-4">
+    <a asp-controller="MeetingRooms"
+       asp-action="Index"
+       class="btn btn-outline-secondary btn-sm mb-3">
+        Back to rooms
+    </a>
+
+    <h1>@Model.Name</h1>
+
+    <p class="text-muted">
+        @(Model.Description ?? "No description provided.")
+    </p>
+
+    <p>
+        <strong>Capacity:</strong> @Model.Capacity
+    </p>
+</div>
+
+<div class="alert alert-info">
+    The room schedule will appear here after time slots are configured.
+</div>

@@ -10,4 +10,11 @@ public interface IMeetingRoomQueries
     Task<EditMeetingRoomRequest?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<MeetingRoomListItem>> GetActiveAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<MeetingRoomDetails?> GetActiveByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default);
 }

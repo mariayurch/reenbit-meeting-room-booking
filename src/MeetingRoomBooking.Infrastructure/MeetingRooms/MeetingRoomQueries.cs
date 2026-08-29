@@ -23,6 +23,22 @@ public sealed class MeetingRoomQueries(
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<MeetingRoomListItem>> GetActiveAsync(
+    CancellationToken cancellationToken = default)
+    {
+        return await dbContext.MeetingRooms
+            .AsNoTracking()
+            .Where(room => room.IsActive)
+            .OrderBy(room => room.Name)
+            .Select(room => new MeetingRoomListItem(
+                room.Id,
+                room.Name,
+                room.Description,
+                room.Capacity,
+                room.IsActive))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<EditMeetingRoomRequest?> GetByIdAsync(
     Guid id,
     CancellationToken cancellationToken = default)
@@ -37,6 +53,21 @@ public sealed class MeetingRoomQueries(
                 Description = room.Description,
                 Capacity = room.Capacity
             })
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<MeetingRoomDetails?> GetActiveByIdAsync(
+    Guid id,
+    CancellationToken cancellationToken = default)
+    {
+        return await dbContext.MeetingRooms
+            .AsNoTracking()
+            .Where(room => room.Id == id && room.IsActive)
+            .Select(room => new MeetingRoomDetails(
+                room.Id,
+                room.Name,
+                room.Description,
+                room.Capacity))
             .SingleOrDefaultAsync(cancellationToken);
     }
 }

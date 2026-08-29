@@ -28,6 +28,23 @@ public sealed class AdminMeetingRoomsController(
         return View(new CreateMeetingRoomRequest());
     }
 
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Schedule(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var room = await meetingRoomQueries.GetActiveByIdAsync(
+            id,
+            cancellationToken);
+
+        if (room is null)
+        {
+            return NotFound();
+        }
+
+        return View(room);
+    }
+
     [HttpPost("create")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
