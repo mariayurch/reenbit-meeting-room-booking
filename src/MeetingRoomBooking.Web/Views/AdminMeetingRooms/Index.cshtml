@@ -65,12 +65,52 @@ else
                     </td>
 
                     <td class="text-end">
-                        <a asp-controller="AdminMeetingRooms"
-                        asp-action="Edit"
-                        asp-route-id="@room.Id"
-                        class="btn btn-sm btn-outline-primary">
-                            Edit
-                        </a>
+                        <div class="d-inline-flex gap-2">
+                            <a asp-controller="AdminMeetingRooms"
+                            asp-action="Edit"
+                            asp-route-id="@room.Id"
+                            class="btn btn-sm btn-outline-primary">
+                                Edit
+                            </a>
+
+                            @if (room.IsActive)
+                            {
+                                <form asp-controller="AdminMeetingRooms"
+                                    asp-action="SetActive"
+                                    asp-route-id="@room.Id"
+                                    method="post"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Deactivate this meeting room?');">
+
+                                    <input type="hidden"
+                                        name="isActive"
+                                        value="false" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Deactivate
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-controller="AdminMeetingRooms"
+                                    asp-action="SetActive"
+                                    asp-route-id="@room.Id"
+                                    method="post"
+                                    class="d-inline">
+
+                                    <input type="hidden"
+                                        name="isActive"
+                                        value="true" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-success">
+                                        Activate
+                                    </button>
+                                </form>
+                            }
+                        </div>
                     </td>
                 </tr>
             }

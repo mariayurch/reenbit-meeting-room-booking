@@ -11,4 +11,9 @@ public interface IMeetingRoomCommands
     Task<MeetingRoomUpdateResult> UpdateAsync(
         EditMeetingRoomRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<bool> SetActiveAsync(
+        Guid id,
+        bool isActive,
+        CancellationToken cancellationToken = default);
 }

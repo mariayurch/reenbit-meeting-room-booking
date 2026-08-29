@@ -42,6 +42,16 @@ public sealed class MeetingRoom
         Description = description?.Trim();
     }
 
+    public void Deactivate()
+    {
+        IsActive = false;
+    }
+
+    public void Activate()
+    {
+        IsActive = true;
+    }
+
     public Guid Id { get; private set; }
 
     public string Name { get; private set; } = string.Empty;

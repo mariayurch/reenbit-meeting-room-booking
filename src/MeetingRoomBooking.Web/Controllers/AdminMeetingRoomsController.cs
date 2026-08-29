@@ -115,4 +115,28 @@ public sealed class AdminMeetingRoomsController(
 
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost("{id:guid}/status")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetActive(
+        Guid id,
+        bool isActive,
+        CancellationToken cancellationToken)
+    {
+        var updated = await meetingRoomCommands.SetActiveAsync(
+            id,
+            isActive,
+            cancellationToken);
+
+        if (!updated)
+        {
+            return NotFound();
+        }
+
+        TempData["SuccessMessage"] = isActive
+            ? "Meeting room was activated successfully."
+            : "Meeting room was deactivated successfully.";
+
+        return RedirectToAction(nameof(Index));
+    }
 }

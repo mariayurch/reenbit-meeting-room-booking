@@ -99,4 +99,33 @@ public sealed class MeetingRoomCommands(
             return MeetingRoomUpdateResult.DuplicateName;
         }
     }
+
+    public async Task<bool> SetActiveAsync(
+    Guid id,
+    bool isActive,
+    CancellationToken cancellationToken = default)
+    {
+        var meetingRoom = await dbContext.MeetingRooms
+            .SingleOrDefaultAsync(
+                room => room.Id == id,
+                cancellationToken);
+
+        if (meetingRoom is null)
+        {
+            return false;
+        }
+
+        if (isActive)
+        {
+            meetingRoom.Activate();
+        }
+        else
+        {
+            meetingRoom.Deactivate();
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
 }
