@@ -2,6 +2,8 @@ using MeetingRoomBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using MeetingRoomBooking.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using MeetingRoomBooking.Application.MeetingRooms;
+using MeetingRoomBooking.Infrastructure.MeetingRooms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,9 @@ var connectionString = builder.Configuration.GetConnectionString(
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IMeetingRoomQueries, MeetingRoomQueries>();
+builder.Services.AddScoped<IMeetingRoomCommands, MeetingRoomCommands>();
 
 builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>

@@ -2,7 +2,29 @@
     ViewData["Title"] = "Admin area";
 }
 
-<div class="text-center">
+<div class="mb-4">
     <h1>Admin area</h1>
-    <p>This page is available only to administrators.</p>
+    <p class="text-muted">
+        Manage the meeting room booking system.
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 card-title">Meeting rooms</h2>
+
+                <p class="card-text">
+                    Create, edit and manage meeting rooms.
+                </p>
+
+                <a asp-controller="AdminMeetingRooms"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                    Manage rooms
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
