@@ -1,0 +1,8 @@
+namespace MeetingRoomBooking.Infrastructure.Identity;
+
+public static class ApplicationRoles
+{
+    public const string User = "User";
+
+    public const string Admin = "Admin";
+}
