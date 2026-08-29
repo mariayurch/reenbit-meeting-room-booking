@@ -50,4 +50,53 @@ public sealed class MeetingRoomCommands(
             return false;
         }
     }
+
+    public async Task<MeetingRoomUpdateResult> UpdateAsync(
+        EditMeetingRoomRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var meetingRoom = await dbContext.MeetingRooms
+            .SingleOrDefaultAsync(
+                room => room.Id == request.Id,
+                cancellationToken);
+
+        if (meetingRoom is null)
+        {
+            return MeetingRoomUpdateResult.NotFound;
+        }
+
+        var normalizedName = request.Name.Trim();
+
+        var nameIsUsedByAnotherRoom = await dbContext.MeetingRooms
+            .AnyAsync(
+                room =>
+                    room.Id != request.Id &&
+                    room.Name == normalizedName,
+                cancellationToken);
+
+        if (nameIsUsedByAnotherRoom)
+        {
+            return MeetingRoomUpdateResult.DuplicateName;
+        }
+
+        meetingRoom.UpdateDetails(
+            normalizedName,
+            request.Capacity,
+            request.Description);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return MeetingRoomUpdateResult.Updated;
+        }
+        catch (DbUpdateException exception)
+            when (exception.InnerException is SqlException
+            {
+                Number: 2601 or 2627
+            })
+        {
+            dbContext.Entry(meetingRoom).State = EntityState.Detached;
+            return MeetingRoomUpdateResult.DuplicateName;
+        }
+    }
 }

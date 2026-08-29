@@ -22,4 +22,21 @@ public sealed class MeetingRoomQueries(
                 room.IsActive))
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<EditMeetingRoomRequest?> GetByIdAsync(
+    Guid id,
+    CancellationToken cancellationToken = default)
+    {
+        return await dbContext.MeetingRooms
+            .AsNoTracking()
+            .Where(room => room.Id == id)
+            .Select(room => new EditMeetingRoomRequest
+            {
+                Id = room.Id,
+                Name = room.Name,
+                Description = room.Description,
+                Capacity = room.Capacity
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+    }
 }

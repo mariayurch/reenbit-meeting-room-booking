@@ -57,4 +57,62 @@ public sealed class AdminMeetingRoomsController(
 
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpGet("{id:guid}/edit")]
+    public async Task<IActionResult> Edit(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var request = await meetingRoomQueries.GetByIdAsync(
+            id,
+            cancellationToken);
+
+        if (request is null)
+        {
+            return NotFound();
+        }
+
+        return View(request);
+    }
+
+    [HttpPost("{id:guid}/edit")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(
+        Guid id,
+        EditMeetingRoomRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (id != request.Id)
+        {
+            return BadRequest();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(request);
+        }
+
+        var result = await meetingRoomCommands.UpdateAsync(
+            request,
+            cancellationToken);
+
+        if (result == MeetingRoomUpdateResult.NotFound)
+        {
+            return NotFound();
+        }
+
+        if (result == MeetingRoomUpdateResult.DuplicateName)
+        {
+            ModelState.AddModelError(
+                nameof(request.Name),
+                "A meeting room with this name already exists.");
+
+            return View(request);
+        }
+
+        TempData["SuccessMessage"] =
+            "Meeting room was updated successfully.";
+
+        return RedirectToAction(nameof(Index));
+    }
 }

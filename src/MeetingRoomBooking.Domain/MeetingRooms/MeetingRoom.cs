@@ -7,7 +7,21 @@ public sealed class MeetingRoom
     {
     }
 
-    public MeetingRoom(string name, int capacity, string? description = null)
+    public MeetingRoom(
+        string name,
+        int capacity,
+        string? description = null)
+    {
+        Id = Guid.NewGuid();
+        IsActive = true;
+
+        UpdateDetails(name, capacity, description);
+    }
+
+    public void UpdateDetails(
+    string name,
+    int capacity,
+    string? description = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -23,11 +37,9 @@ public sealed class MeetingRoom
                 "Meeting room capacity must be greater than zero.");
         }
 
-        Id = Guid.NewGuid();
         Name = name.Trim();
         Capacity = capacity;
         Description = description?.Trim();
-        IsActive = true;
     }
 
     public Guid Id { get; private set; }
