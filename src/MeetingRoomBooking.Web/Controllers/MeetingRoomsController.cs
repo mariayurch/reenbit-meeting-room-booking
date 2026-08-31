@@ -1,4 +1,6 @@
 using MeetingRoomBooking.Application.MeetingRooms;
+using MeetingRoomBooking.Application.TimeSlots;
+using MeetingRoomBooking.Web.Models.TimeSlots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +9,8 @@ namespace MeetingRoomBooking.Web.Controllers;
 [Authorize]
 [Route("meeting-rooms")]
 public sealed class MeetingRoomsController(
-    IMeetingRoomQueries meetingRoomQueries) : Controller
+    IMeetingRoomQueries meetingRoomQueries,
+    ITimeSlotQueries timeSlotQueries) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(
@@ -22,8 +25,14 @@ public sealed class MeetingRoomsController(
     [HttpGet("{id:guid}", Name = "MeetingRoomSchedule")]
     public async Task<IActionResult> Schedule(
         Guid id,
+        [FromQuery] DateOnly? date,
         CancellationToken cancellationToken)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest("Invalid date.");
+        }
+
         var room = await meetingRoomQueries.GetActiveByIdAsync(
             id,
             cancellationToken);
@@ -33,6 +42,24 @@ public sealed class MeetingRoomsController(
             return NotFound();
         }
 
-        return View(room);
+        var selectedDate = date
+            ?? DateOnly.FromDateTime(DateTime.UtcNow);
+
+        if (selectedDate == DateOnly.MaxValue)
+        {
+            return BadRequest("Date is outside the supported range.");
+        }
+
+        var slots = await timeSlotQueries.GetByRoomAndDateAsync(
+            id,
+            selectedDate,
+            cancellationToken);
+
+        return View(new RoomScheduleViewModel
+        {
+            Room = room,
+            Date = selectedDate,
+            Slots = slots
+        });
     }
 }

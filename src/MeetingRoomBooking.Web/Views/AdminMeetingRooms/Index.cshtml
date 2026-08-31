@@ -75,6 +75,13 @@ else
 
                             @if (room.IsActive)
                             {
+                                <a asp-controller="AdminTimeSlots"
+                                asp-action="Create"
+                                asp-route-meetingRoomId="@room.Id"
+                                class="btn btn-sm btn-outline-success">
+                                    Add time slot
+                                </a>
+
                                 <form asp-controller="AdminMeetingRooms"
                                     asp-action="SetActive"
                                     asp-route-id="@room.Id"

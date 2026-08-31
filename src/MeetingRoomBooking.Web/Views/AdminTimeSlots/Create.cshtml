@@ -1,0 +1,88 @@
+@model MeetingRoomBooking.Web.Models.TimeSlots.CreateTimeSlotViewModel
+
+@{
+    ViewData["Title"] = "Create time slot";
+}
+
+<h1>Create time slot</h1>
+
+<p class="text-muted">
+    Room: <strong>@Model.RoomName</strong>
+</p>
+
+<div class="alert alert-info">
+    All dates and times on this form are in UTC.
+    The slot must start and end on the same day.
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="status">
+        @successMessage
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-controller="AdminTimeSlots"
+              asp-action="Create"
+              asp-route-meetingRoomId="@Model.MeetingRoomId"
+              method="post">
+
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Date" class="form-label">
+                    Date (UTC)
+                </label>
+                <input asp-for="Date"
+                       type="date"
+                       asp-format="{0:yyyy-MM-dd}"
+                       class="form-control" />
+                <span asp-validation-for="Date"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="StartTime" class="form-label">
+                    Start time (UTC)
+                </label>
+                <input asp-for="StartTime"
+                       type="time"
+                       asp-format="{0:HH:mm}"
+                       step="60"
+                       class="form-control" />
+                <span asp-validation-for="StartTime"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EndTime" class="form-label">
+                    End time (UTC)
+                </label>
+                <input asp-for="EndTime"
+                       type="time"
+                       asp-format="{0:HH:mm}"
+                       step="60"
+                       class="form-control" />
+                <span asp-validation-for="EndTime"
+                      class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Create slot
+            </button>
+
+            <a asp-controller="AdminMeetingRooms"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back to rooms
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

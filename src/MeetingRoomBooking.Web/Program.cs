@@ -4,6 +4,8 @@ using MeetingRoomBooking.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using MeetingRoomBooking.Application.MeetingRooms;
 using MeetingRoomBooking.Infrastructure.MeetingRooms;
+using MeetingRoomBooking.Application.TimeSlots;
+using MeetingRoomBooking.Infrastructure.TimeSlots;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IMeetingRoomQueries, MeetingRoomQueries>();
 builder.Services.AddScoped<IMeetingRoomCommands, MeetingRoomCommands>();
+builder.Services.AddScoped<ITimeSlotQueries, TimeSlotQueries>();
+builder.Services.AddScoped<ITimeSlotCommands, TimeSlotCommands>();
 
 builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>
