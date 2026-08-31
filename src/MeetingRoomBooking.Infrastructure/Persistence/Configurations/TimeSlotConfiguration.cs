@@ -22,10 +22,10 @@ public sealed class TimeSlotConfiguration
             .IsRequired();
 
         builder.HasIndex(slot => new
-            {
-                slot.MeetingRoomId,
-                slot.StartUtc
-            })
+        {
+            slot.MeetingRoomId,
+            slot.StartUtc
+        })
             .IsUnique();
 
         builder.ToTable(table =>

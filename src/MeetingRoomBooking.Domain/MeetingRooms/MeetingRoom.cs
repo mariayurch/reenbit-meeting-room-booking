@@ -1,4 +1,5 @@
 namespace MeetingRoomBooking.Domain.MeetingRooms;
+
 using MeetingRoomBooking.Domain.TimeSlots;
 
 public sealed class MeetingRoom
