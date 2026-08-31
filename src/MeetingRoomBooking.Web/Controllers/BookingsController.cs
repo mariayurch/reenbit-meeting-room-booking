@@ -7,6 +7,8 @@ using MeetingRoomBooking.Application.TimeSlots;
 using MeetingRoomBooking.Web.Models.TimeSlots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MeetingRoomBooking.Web.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MeetingRoomBooking.Web.Controllers;
 
@@ -16,7 +18,9 @@ public sealed class BookingsController(
     IBookingCommands bookingCommands,
     IMeetingRoomQueries meetingRoomQueries,
     ITimeSlotQueries timeSlotQueries,
-    TimeProvider timeProvider) : Controller
+    TimeProvider timeProvider,
+    IHubContext<RoomScheduleHub> hubContext,
+    ILogger<BookingsController> logger) : Controller
 {
     [HttpPost("")]
     [ValidateAntiForgeryToken]
@@ -58,6 +62,10 @@ public sealed class BookingsController(
 
         if (result == BookingCreationResult.Success)
         {
+            await NotifySlotsBookedAsync(
+                meetingRoomId,
+                request.TimeSlotIds.ToArray());
+
             TempData["SuccessMessage"] =
                 "Your booking was created successfully.";
 
@@ -125,5 +133,35 @@ public sealed class BookingsController(
                 Date = selectedDate,
                 Slots = slots
             });
+    }
+
+    private async Task NotifySlotsBookedAsync(
+    Guid meetingRoomId,
+    Guid[] timeSlotIds)
+    {
+        try
+        {
+            using var timeout = new CancellationTokenSource(
+                TimeSpan.FromSeconds(5));
+
+            await hubContext.Clients
+                .Group(RoomScheduleHub.GetGroupName(meetingRoomId))
+                .SendAsync(
+                    "SlotsBooked",
+                    new
+                    {
+                        MeetingRoomId = meetingRoomId,
+                        TimeSlotIds = timeSlotIds
+                    },
+                    timeout.Token);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Booking was saved, but the SignalR notification "
+                    + "failed for room {MeetingRoomId}.",
+                meetingRoomId);
+        }
     }
 }

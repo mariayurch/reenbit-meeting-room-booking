@@ -65,6 +65,15 @@
     All times below are in UTC.
 </p>
 
+<p id="realtime-status"
+   class="text-muted"
+   role="status"
+   data-room-id="@Model.Room.Id"
+   data-hub-url="@Url.Content("~/hubs/room-schedule")"
+   data-date="@(Model.Date.ToString("yyyy-MM-dd"))">
+    Connecting to live updates…
+</p>
+
 @if (Model.Slots.Count == 0)
 {
     <div class="alert alert-info">
@@ -100,7 +109,7 @@ else
             <tbody>
                 @foreach (var slot in Model.Slots)
                 {
-                    <tr>
+                    <tr data-slot-id="@slot.Id">
                         <td>
                             @if (!slot.IsBooked)
                             {
@@ -140,4 +149,13 @@ else
             Book selected slots
         </button>
     </form>
+}
+
+@section Scripts
+{
+    <script src="~/lib/signalr/signalr.min.js"
+            asp-append-version="true"></script>
+
+    <script src="~/js/room-schedule.js"
+            asp-append-version="true"></script>
 }

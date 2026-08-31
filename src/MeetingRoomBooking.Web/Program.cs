@@ -8,6 +8,7 @@ using MeetingRoomBooking.Application.TimeSlots;
 using MeetingRoomBooking.Infrastructure.TimeSlots;
 using MeetingRoomBooking.Application.Bookings;
 using MeetingRoomBooking.Infrastructure.Bookings;
+using MeetingRoomBooking.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,8 @@ builder.Services
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddRazorPages();
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -102,6 +105,8 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
+
+app.MapHub<RoomScheduleHub>("/hubs/room-schedule");
 
 app.Run();
 
