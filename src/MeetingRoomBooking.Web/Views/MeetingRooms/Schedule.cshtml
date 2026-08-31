@@ -6,14 +6,16 @@
 
 @if (TempData["SuccessMessage"] is string successMessage)
 {
-    <div class="alert alert-success" role="status">
+    <div class="alert alert-success shadow-sm" role="status">
+        <strong>Booking confirmed.</strong>
         @successMessage
     </div>
 }
 
 @if (ViewData["BookingError"] is string bookingError)
 {
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-danger shadow-sm" role="alert">
+        <strong>Booking could not be completed.</strong>
         @bookingError
     </div>
 }
@@ -21,52 +23,67 @@
 <div class="mb-4">
     <a asp-controller="MeetingRooms"
        asp-action="Index"
-       class="btn btn-outline-secondary btn-sm mb-3">
-        Back to rooms
+       class="text-decoration-none d-inline-block mb-3">
+        ← Back to rooms
     </a>
 
-    <h1>@Model.Room.Name</h1>
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+        <div>
+            <p class="text-primary fw-semibold mb-2">
+                Room schedule
+            </p>
 
-    <p class="text-muted">
-        @(Model.Room.Description ?? "No description provided.")
-    </p>
+            <h1 class="fw-bold mb-2">
+                @Model.Room.Name
+            </h1>
 
-    <p>
-        <strong>Capacity:</strong> @Model.Room.Capacity
-    </p>
+            <p class="text-muted mb-0">
+                @(Model.Room.Description ?? "No description provided.")
+            </p>
+        </div>
+
+        <span class="badge text-bg-light fs-6">
+            Capacity: @Model.Room.Capacity
+        </span>
+    </div>
 </div>
 
-<form asp-controller="MeetingRooms"
-      asp-action="Schedule"
-      asp-route-id="@Model.Room.Id"
-      method="get"
-      class="row g-3 align-items-end mb-4">
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <form asp-controller="MeetingRooms"
+              asp-action="Schedule"
+              asp-route-id="@Model.Room.Id"
+              method="get"
+              class="row g-3 align-items-end">
 
-    <div class="col-sm-4">
-        <label asp-for="Date" class="form-label">
-            Date (UTC)
-        </label>
-        <input asp-for="Date"
-               type="date"
-               asp-format="{0:yyyy-MM-dd}"
-               name="date"
-               required
-               class="form-control" />
+            <div class="col-sm-6 col-md-4">
+                <label asp-for="Date" class="form-label fw-semibold">
+                    Schedule date
+                </label>
+
+                <input asp-for="Date"
+                       type="date"
+                       asp-format="{0:yyyy-MM-dd}"
+                       name="date"
+                       required
+                       class="form-control" />
+            </div>
+
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">
+                    Show schedule
+                </button>
+            </div>
+        </form>
+
+        <p class="text-muted small mb-0 mt-3">
+            All times are displayed in UTC.
+        </p>
     </div>
-
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">
-            Show schedule
-        </button>
-    </div>
-</form>
-
-<p class="text-muted">
-    All times below are in UTC.
-</p>
+</div>
 
 <p id="realtime-status"
-   class="text-muted"
+   class="alert alert-light border py-2 px-3 small"
    role="status"
    data-room-id="@Model.Room.Id"
    data-hub-url="@Url.Content("~/hubs/room-schedule")"
@@ -76,8 +93,16 @@
 
 @if (Model.Slots.Count == 0)
 {
-    <div class="alert alert-info">
-        No time slots are configured for this date.
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 text-center">
+            <h2 class="h5 fw-bold mb-2">
+                No time slots available
+            </h2>
+
+            <p class="text-muted mb-0">
+                No bookable time slots are configured for this room on the selected date.
+            </p>
+        </div>
     </div>
 }
 else
@@ -91,61 +116,71 @@ else
                name="date"
                value="@Model.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)" />
 
-        <p>
-            Select one slot or several consecutive slots,
-            then click Book selected slots.
-            Slots that have already started cannot be booked.
-        </p>
+        <div class="mb-3">
+            <h2 class="h5 fw-bold mb-1">
+                Available time slots
+            </h2>
 
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th scope="col">Select</th>
-                    <th scope="col">Start (UTC)</th>
-                    <th scope="col">End (UTC)</th>
-                    <th scope="col">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var slot in Model.Slots)
-                {
-                    <tr data-slot-id="@slot.Id">
-                        <td>
-                            @if (!slot.IsBooked)
-                            {
-                                <input type="checkbox"
-                                       name="TimeSlotIds"
-                                       value="@slot.Id"
-                                       class="form-check-input"
-                                       aria-label="@($"Select slot {slot.StartUtc:HH:mm}–{slot.EndUtc:HH:mm} UTC")" />
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </td>
-                        <td>@slot.StartUtc.ToString("HH:mm")</td>
-                        <td>@slot.EndUtc.ToString("HH:mm")</td>
-                        <td>
-                            @if (slot.IsBooked)
-                            {
-                                <span class="badge bg-danger">
-                                    Booked
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-success">
-                                    Free
-                                </span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+            <p class="text-muted mb-0">
+                Select one slot or several consecutive slots.
+                Slots that have already started cannot be booked.
+            </p>
+        </div>
 
-        <button type="submit" class="btn btn-primary">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Select</th>
+                            <th scope="col">Start (UTC)</th>
+                            <th scope="col">End (UTC)</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var slot in Model.Slots)
+                        {
+                            <tr data-slot-id="@slot.Id">
+                                <td>
+                                    @if (!slot.IsBooked)
+                                    {
+                                        <input type="checkbox"
+                                            name="TimeSlotIds"
+                                            value="@slot.Id"
+                                            class="form-check-input"
+                                            aria-label="@($"Select slot {slot.StartUtc:HH:mm}–{slot.EndUtc:HH:mm} UTC")" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>@slot.StartUtc.ToString("HH:mm")</td>
+                                <td>@slot.EndUtc.ToString("HH:mm")</td>
+                                <td>
+                                    @if (slot.IsBooked)
+                                    {
+                                        <span class="badge bg-danger">
+                                            Booked
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            Free
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary px-4">
             Book selected slots
         </button>
     </form>

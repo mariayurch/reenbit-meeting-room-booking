@@ -1,8 +1,79 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="py-5">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+            <p class="text-primary fw-semibold mb-2">
+                Meeting Room Booking
+            </p>
+
+            <h1 class="display-4 fw-bold mb-3">
+                Find a room.
+                Pick a time.
+                Book it.
+            </h1>
+
+            <p class="lead text-muted mb-4">
+                View meeting room schedules, reserve available time slots,
+                and see booking updates in real time.
+            </p>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="MeetingRooms"
+                   asp-action="Index"
+                   class="btn btn-primary btn-lg">
+                    Browse meeting rooms
+                </a>
+            }
+            else
+            {
+                <a asp-area="Identity"
+                   asp-page="/Account/Login"
+                   class="btn btn-primary btn-lg me-2">
+                    Sign in
+                </a>
+
+                <a asp-area="Identity"
+                   asp-page="/Account/Register"
+                   class="btn btn-outline-secondary btn-lg">
+                    Create account
+                </a>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-4">
+                        How it works
+                    </h2>
+
+                    <div class="mb-3">
+                        <strong>1. Choose a room</strong>
+                        <div class="text-muted">
+                            Browse all available meeting spaces.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>2. Check the schedule</strong>
+                        <div class="text-muted">
+                            See free and booked slots for any date.
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>3. Reserve your time</strong>
+                        <div class="text-muted">
+                            Book available slots with concurrency-safe processing
+                            and live status updates.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

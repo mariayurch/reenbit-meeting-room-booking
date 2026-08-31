@@ -1,14 +1,21 @@
 @model IReadOnlyList<MeetingRoomBooking.Application.MeetingRooms.Models.MeetingRoomListItem>
 
 @{
-    ViewData["Title"] = "Meeting rooms";
+    ViewData["Title"] = "Manage meeting rooms";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div>
-        <h1>Meeting rooms</h1>
+        <p class="text-primary fw-semibold mb-2">
+            Administration
+        </p>
+
+        <h1 class="fw-bold mb-2">
+            Meeting rooms
+        </h1>
+
         <p class="text-muted mb-0">
-            Manage the meeting rooms available for booking.
+            Create rooms, update their details and manage booking availability.
         </p>
     </div>
 
@@ -21,106 +28,138 @@
 
 @if (TempData["SuccessMessage"] is string successMessage)
 {
-    <div class="alert alert-success">
+    <div class="alert alert-success shadow-sm" role="status">
         @successMessage
     </div>
 }
 
 @if (Model.Count == 0)
 {
-    <div class="alert alert-info">
-        No meeting rooms have been created yet.
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 text-center">
+            <h2 class="h5 fw-bold mb-2">
+                No meeting rooms yet
+            </h2>
+
+            <p class="text-muted mb-3">
+                Create the first room to start configuring schedules.
+            </p>
+
+            <a asp-controller="AdminMeetingRooms"
+               asp-action="Create"
+               class="btn btn-primary">
+                Create room
+            </a>
+        </div>
     </div>
 }
 else
 {
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Capacity</th>
-                <th>Status</th>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
 
-                <th class="text-end">Actions</th>
+                <tbody>
+                    @foreach (var room in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">
+                                @room.Name
+                            </td>
 
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var room in Model)
-            {
-                <tr>
-                    <td>@room.Name</td>
-                    <td>@(room.Description ?? "—")</td>
-                    <td>@room.Capacity</td>
-                    <td>
-                        @if (room.IsActive)
-                        {
-                            <span class="badge bg-success">Active</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Inactive</span>
-                        }
-                    </td>
+                            <td class="text-muted">
+                                @(room.Description ?? "—")
+                            </td>
 
-                    <td class="text-end">
-                        <div class="d-inline-flex gap-2">
-                            <a asp-controller="AdminMeetingRooms"
-                            asp-action="Edit"
-                            asp-route-id="@room.Id"
-                            class="btn btn-sm btn-outline-primary">
-                                Edit
-                            </a>
+                            <td>
+                                @room.Capacity
+                            </td>
 
-                            @if (room.IsActive)
-                            {
-                                <a asp-controller="AdminTimeSlots"
-                                asp-action="Create"
-                                asp-route-meetingRoomId="@room.Id"
-                                class="btn btn-sm btn-outline-success">
-                                    Add time slot
-                                </a>
+                            <td>
+                                @if (room.IsActive)
+                                {
+                                    <span class="badge bg-success">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
 
-                                <form asp-controller="AdminMeetingRooms"
-                                    asp-action="SetActive"
-                                    asp-route-id="@room.Id"
-                                    method="post"
-                                    class="d-inline"
-                                    onsubmit="return confirm('Deactivate this meeting room?');">
+                            <td class="text-end">
+                                <div class="d-inline-flex flex-wrap justify-content-end gap-2">
 
-                                    <input type="hidden"
-                                        name="isActive"
-                                        value="false" />
+                                    <a asp-controller="AdminMeetingRooms"
+                                       asp-action="Edit"
+                                       asp-route-id="@room.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Edit
+                                    </a>
 
-                                    <button type="submit"
-                                            class="btn btn-sm btn-outline-danger">
-                                        Deactivate
-                                    </button>
-                                </form>
-                            }
-                            else
-                            {
-                                <form asp-controller="AdminMeetingRooms"
-                                    asp-action="SetActive"
-                                    asp-route-id="@room.Id"
-                                    method="post"
-                                    class="d-inline">
+                                    @if (room.IsActive)
+                                    {
+                                        <a asp-controller="AdminTimeSlots"
+                                           asp-action="Create"
+                                           asp-route-meetingRoomId="@room.Id"
+                                           class="btn btn-sm btn-outline-success">
+                                            Add time slot
+                                        </a>
 
-                                    <input type="hidden"
-                                        name="isActive"
-                                        value="true" />
+                                        <form asp-controller="AdminMeetingRooms"
+                                              asp-action="SetActive"
+                                              asp-route-id="@room.Id"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Deactivate this meeting room?');">
 
-                                    <button type="submit"
-                                            class="btn btn-sm btn-outline-success">
-                                        Activate
-                                    </button>
-                                </form>
-                            }
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                                            <input type="hidden"
+                                                   name="isActive"
+                                                   value="false" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Deactivate
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-controller="AdminMeetingRooms"
+                                              asp-action="SetActive"
+                                              asp-route-id="@room.Id"
+                                              method="post"
+                                              class="d-inline">
+
+                                            <input type="hidden"
+                                                   name="isActive"
+                                                   value="true" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-success">
+                                                Activate
+                                            </button>
+                                        </form>
+                                    }
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
