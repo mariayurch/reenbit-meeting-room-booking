@@ -18,10 +18,13 @@ public sealed class BookingConcurrencyTests(
     SqlServerFixture database)
     : IClassFixture<SqlServerFixture>
 {
-    [Fact]
-    public async Task Concurrent_requests_for_same_slot_create_one_booking()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Concurrent_requests_for_overlapping_slots_create_one_booking(
+        bool useMultipleSlots)
     {
-        const int requestCount = 5;
+        var requestCount = useMultipleSlots ? 2 : 5;
 
         // Disposable test accounts in the isolated container only.
         const string password = "Concurrency-Test-123!";
@@ -39,13 +42,21 @@ public sealed class BookingConcurrencyTests(
             6);
 
         var startUtc = new DateTimeOffset(
-            DateTime.UtcNow.Date.AddDays(2).AddHours(9),
+            DateTime.UtcNow.Date.AddDays(2).AddHours(16).AddMinutes(30),
             TimeSpan.Zero);
 
-        var slot = new TimeSlot(
-            room.Id,
-            startUtc,
-            startUtc.AddMinutes(30));
+        var slots = Enumerable.Range(0, useMultipleSlots ? 3 : 1)
+            .Select(index => new TimeSlot(
+                room.Id,
+                startUtc.AddMinutes(index * 30),
+                startUtc.AddMinutes((index + 1) * 30)))
+            .ToArray();
+
+        var requestedSlots = Enumerable.Range(0, requestCount)
+            .Select(index => useMultipleSlots
+                ? slots.Skip(index).Take(2).ToArray()
+                : new[] { slots[0] })
+            .ToArray();
 
         var users = new List<ApplicationUser>();
 
@@ -96,7 +107,7 @@ public sealed class BookingConcurrencyTests(
             }
 
             dbContext.MeetingRooms.Add(room);
-            dbContext.TimeSlots.Add(slot);
+            dbContext.TimeSlots.AddRange(slots);
 
             await dbContext.SaveChangesAsync(cancellationToken);
         }
@@ -174,14 +185,19 @@ public sealed class BookingConcurrencyTests(
                 {
                     await startGate.Task.WaitAsync(cancellationToken);
 
-                    using var form = new FormUrlEncodedContent(
-                        new Dictionary<string, string>
-                        {
-                            ["TimeSlotIds"] = slot.Id.ToString(),
-                            ["date"] = date,
-                            ["__RequestVerificationToken"] =
-                                bookingTokens[index]
-                        });
+                    var fields = new List<KeyValuePair<string, string>>
+                    {
+                        new("date", date),
+                        new("__RequestVerificationToken", bookingTokens[index])
+                    };
+
+                    fields.AddRange(
+                        requestedSlots[index].Select(selectedSlot =>
+                            new KeyValuePair<string, string>(
+                                "TimeSlotIds",
+                                selectedSlot.Id.ToString())));
+
+                    using var form = new FormUrlEncodedContent(fields);
 
                     using var response = await client.PostAsync(
                         bookingUrl,
@@ -228,12 +244,41 @@ public sealed class BookingConcurrencyTests(
                 users[winnerIndex].Id,
                 savedBooking.UserId);
 
-            Assert.Equal(startUtc, savedBooking.StartUtc);
-            Assert.Equal(startUtc.AddMinutes(30), savedBooking.EndUtc);
+            var winnerSlots = requestedSlots[winnerIndex];
 
-            var bookedSlot = Assert.Single(savedBooking.TimeSlots);
+            Assert.Equal(
+                winnerSlots[0].StartUtc,
+                savedBooking.StartUtc);
 
-            Assert.Equal(slot.Id, bookedSlot.Id);
+            Assert.Equal(
+                winnerSlots[^1].EndUtc,
+                savedBooking.EndUtc);
+
+            var expectedSlotIds = winnerSlots
+                .Select(selectedSlot => selectedSlot.Id)
+                .OrderBy(id => id)
+                .ToArray();
+
+            var actualSlotIds = savedBooking.TimeSlots
+                .Select(selectedSlot => selectedSlot.Id)
+                .OrderBy(id => id)
+                .ToArray();
+
+            Assert.Equal(expectedSlotIds, actualSlotIds);
+
+            // Only the winner's slot links may remain in the database.
+            var allSlotIds = slots
+                .Select(selectedSlot => selectedSlot.Id)
+                .ToArray();
+
+            var savedLinksCount = await verificationDb
+                .Set<Dictionary<string, object>>("BookingTimeSlots")
+                .CountAsync(
+                    link => allSlotIds.Contains(
+                        EF.Property<Guid>(link, "TimeSlotId")),
+                    cancellationToken);
+
+            Assert.Equal(winnerSlots.Length, savedLinksCount);
         }
         finally
         {
