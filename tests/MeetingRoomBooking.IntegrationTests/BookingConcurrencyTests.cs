@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using System.Text.RegularExpressions;
 using MeetingRoomBooking.Domain.Bookings;
 using MeetingRoomBooking.Domain.MeetingRooms;
 using MeetingRoomBooking.Domain.TimeSlots;
@@ -153,7 +152,7 @@ public sealed class BookingConcurrencyTests(
                     {
                         ["Input.Email"] = user.Email!,
                         ["Input.Password"] = password,
-                        ["__RequestVerificationToken"] = ExtractToken(loginHtml, "Input.Email")
+                        ["__RequestVerificationToken"] = TestFormHelper.ExtractToken(loginHtml, "Input.Email")
                     });
 
                 using var loginResponse = await client.PostAsync(
@@ -174,7 +173,7 @@ public sealed class BookingConcurrencyTests(
                 var scheduleHtml = await schedule.Content
                     .ReadAsStringAsync(cancellationToken);
 
-                bookingTokens.Add(ExtractToken(scheduleHtml, "TimeSlotIds"));
+                bookingTokens.Add(TestFormHelper.ExtractToken(scheduleHtml, "TimeSlotIds"));
             }
 
             var startGate = new TaskCompletionSource<bool>(
@@ -287,50 +286,5 @@ public sealed class BookingConcurrencyTests(
                 client.Dispose();
             }
         }
-    }
-
-    private static string ExtractToken(
-    string html,
-    string uniqueFieldName)
-    {
-        var regexTimeout = TimeSpan.FromSeconds(1);
-
-        var forms = Regex.Matches(
-            html,
-            @"<form\b[^>]*>(?<content>.*?)</form\s*>",
-            RegexOptions.IgnoreCase | RegexOptions.Singleline,
-            regexTimeout);
-
-        var targetForm = forms
-            .Cast<Match>()
-            .Single(form => Regex.IsMatch(
-                form.Groups["content"].Value,
-                $@"\bname=""{Regex.Escape(uniqueFieldName)}""",
-                RegexOptions.IgnoreCase,
-                regexTimeout));
-
-        var tokenInput = Regex.Matches(
-                targetForm.Groups["content"].Value,
-                @"<input\b[^>]*>",
-                RegexOptions.IgnoreCase,
-                regexTimeout)
-            .Cast<Match>()
-            .Single(input => Regex.IsMatch(
-                input.Value,
-                @"\bname=""__RequestVerificationToken""",
-                RegexOptions.IgnoreCase,
-                regexTimeout));
-
-        var value = Regex.Match(
-            tokenInput.Value,
-            @"\bvalue=""([^""]*)""",
-            RegexOptions.IgnoreCase,
-            regexTimeout);
-
-        Assert.True(
-            value.Success,
-            "Antiforgery token value was not found.");
-
-        return WebUtility.HtmlDecode(value.Groups[1].Value);
     }
 }
