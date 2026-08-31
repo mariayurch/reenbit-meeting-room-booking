@@ -4,6 +4,20 @@
     ViewData["Title"] = $"{Model.Room.Name} schedule";
 }
 
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="status">
+        @successMessage
+    </div>
+}
+
+@if (ViewData["BookingError"] is string bookingError)
+{
+    <div class="alert alert-danger" role="alert">
+        @bookingError
+    </div>
+}
+
 <div class="mb-4">
     <a asp-controller="MeetingRooms"
        asp-action="Index"
@@ -59,32 +73,71 @@
 }
 else
 {
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th scope="col">Start (UTC)</th>
-                <th scope="col">End (UTC)</th>
-                <th scope="col">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var slot in Model.Slots)
-            {
+    <form asp-controller="Bookings"
+          asp-action="Create"
+          asp-route-meetingRoomId="@Model.Room.Id"
+          method="post">
+
+        <input type="hidden"
+               name="date"
+               value="@Model.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)" />
+
+        <p>
+            Select one slot or several consecutive slots,
+            then click Book selected slots.
+            Slots that have already started cannot be booked.
+        </p>
+
+        <table class="table table-striped align-middle">
+            <thead>
                 <tr>
-                    <td>@slot.StartUtc.ToString("HH:mm")</td>
-                    <td>@slot.EndUtc.ToString("HH:mm")</td>
-                    <td>
-                        @if (slot.IsBooked)
-                        {
-                            <span class="badge bg-danger">Booked</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-success">Free</span>
-                        }
-                    </td>
+                    <th scope="col">Select</th>
+                    <th scope="col">Start (UTC)</th>
+                    <th scope="col">End (UTC)</th>
+                    <th scope="col">Status</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var slot in Model.Slots)
+                {
+                    <tr>
+                        <td>
+                            @if (!slot.IsBooked)
+                            {
+                                <input type="checkbox"
+                                       name="TimeSlotIds"
+                                       value="@slot.Id"
+                                       class="form-check-input"
+                                       aria-label="@($"Select slot {slot.StartUtc:HH:mm}–{slot.EndUtc:HH:mm} UTC")" />
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>@slot.StartUtc.ToString("HH:mm")</td>
+                        <td>@slot.EndUtc.ToString("HH:mm")</td>
+                        <td>
+                            @if (slot.IsBooked)
+                            {
+                                <span class="badge bg-danger">
+                                    Booked
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">
+                                    Free
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">
+            Book selected slots
+        </button>
+    </form>
 }
