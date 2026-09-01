@@ -22,6 +22,24 @@ public sealed class ApplicationDbContext(
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<IdentityUserLogin<Guid>>(entity =>
+        {
+            entity.Property(login => login.LoginProvider)
+                .HasMaxLength(128);
+
+            entity.Property(login => login.ProviderKey)
+                .HasMaxLength(128);
+        });
+
+        modelBuilder.Entity<IdentityUserToken<Guid>>(entity =>
+        {
+            entity.Property(token => token.LoginProvider)
+                .HasMaxLength(128);
+
+            entity.Property(token => token.Name)
+                .HasMaxLength(128);
+        });
+
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ApplicationDbContext).Assembly);
     }
