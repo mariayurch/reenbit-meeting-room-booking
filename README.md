@@ -418,4 +418,4 @@ The production environment uses:
 
 Production URL:
 
-[https://reenbit-meeting-room-booking.azurewebsites.net](https://reenbit-meeting-room-booking.azurewebsites.net)
+[https://reenbit-meeting-room-booking-f4fbd8awc8efbaab.polandcentral-01.azurewebsites.net](https://reenbit-meeting-room-booking-f4fbd8awc8efbaab.polandcentral-01.azurewebsites.net)
