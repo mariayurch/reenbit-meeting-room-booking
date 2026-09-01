@@ -26,6 +26,7 @@ builder.Services.AddScoped<ITimeSlotQueries, TimeSlotQueries>();
 builder.Services.AddScoped<ITimeSlotCommands, TimeSlotCommands>();
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddScoped<IBookingCommands, BookingCommands>();
+builder.Services.AddScoped<IBookingQueries, BookingQueries>();
 
 builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>

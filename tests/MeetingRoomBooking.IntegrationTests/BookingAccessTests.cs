@@ -103,9 +103,11 @@ public sealed class BookingAccessTests(SqlServerFixture database)
     [Theory]
     [InlineData("Admin", "/admin/meeting-rooms")]
     [InlineData("Admin", "/admin/meeting-rooms/create")]
+    [InlineData("Admin", "/admin/bookings")]
     [InlineData("User", "/admin/meeting-rooms")]
     [InlineData("User", "/admin/meeting-rooms/create")]
-    public async Task Admin_room_management_requires_admin_role(
+    [InlineData("User", "/admin/bookings")]
+    public async Task Admin_pages_require_admin_role(
         string role,
         string url)
     {

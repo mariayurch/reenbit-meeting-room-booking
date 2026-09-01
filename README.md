@@ -25,6 +25,7 @@ Administrators can additionally:
 - edit meeting rooms;
 - activate or deactivate meeting rooms;
 - create bookable time slots;
+- view all bookings across users, including the room, user email, time range, and booking status;
 - access the administration area.
 
 ## Technology stack
@@ -318,7 +319,7 @@ dotnet test
 
 The integration test suite covers:
 
-- booking access and role authorization;
+- booking access and role authorization, including the admin-only all-bookings page;
 - normal booking flow;
 - simultaneous booking requests for the same slot;
 - partially overlapping multi-slot booking requests.
@@ -364,7 +365,7 @@ without refreshing the page.
 
 ASP.NET Core SignalR is used during local development.
 
-Azure SignalR Service is intended for the deployed environment.
+The deployed environment uses Azure SignalR Service, so real-time updates continue to work when the application runs in Azure.
 
 ## Security and configuration
 
@@ -408,11 +409,13 @@ development.
 
 ## Azure deployment
 
-The production environment is designed to use:
+The production environment uses:
 
-- Azure App Service;
-- Azure SQL Database;
-- Azure SignalR Service.
+- Azure App Service for the ASP.NET Core application;
+- Azure SQL Database for persistent storage;
+- Azure SignalR Service for real-time schedule updates;
+- GitHub Actions for continuous deployment from the `main` branch.
 
-Deployment configuration and the public application URL will be documented
-here after the Azure infrastructure is created.
+Production URL:
+
+[https://reenbit-meeting-room-booking.azurewebsites.net](https://reenbit-meeting-room-booking.azurewebsites.net)
