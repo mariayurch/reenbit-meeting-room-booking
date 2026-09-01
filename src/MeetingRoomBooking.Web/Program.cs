@@ -40,7 +40,18 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddRazorPages();
 
-builder.Services.AddSignalR();
+var signalRBuilder = builder.Services.AddSignalR();
+
+var azureSignalRConnectionString =
+    builder.Configuration["Azure:SignalR:ConnectionString"];
+
+if (!string.IsNullOrWhiteSpace(azureSignalRConnectionString))
+{
+    signalRBuilder.AddAzureSignalR(options =>
+    {
+        options.ConnectionString = azureSignalRConnectionString;
+    });
+}
 
 var app = builder.Build();
 
